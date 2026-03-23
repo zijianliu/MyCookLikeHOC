@@ -86,11 +86,13 @@
     "@dcloudio/uni-quickapp-webview": "3.0.0-4060620250520001",
     "@supabase/supabase-js": "^2.58.0",
     "@vueuse/core": "^11.0.3",
+    "@vueuse/shared": "^11.0.3",
     "alova": "^3.3.4",
     "echarts": "^6.0.0",
     "pinia": "^2.3.1",
     "uni-echarts": "^1.1.2",
     "vue": "~3.4.38",
+    "vue-demi": "^0.14.10",
     "vue-i18n": "^9.14.0",
     "wot-design-uni": "^1.13.0"
   },

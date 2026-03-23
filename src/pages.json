@@ -27,11 +27,52 @@
       }
     },
     {
+      "path": "pages/edit-profile/index",
+      "type": "page",
+      "name": "edit-profile",
+      "style": {
+        "navigationBarTitleText": "编辑资料"
+      }
+    },
+    {
+      "path": "pages/login/index",
+      "type": "page",
+      "name": "login",
+      "style": {
+        "navigationBarTitleText": "登录"
+      }
+    },
+    {
+      "path": "pages/my-favorites/index",
+      "type": "page",
+      "name": "my-favorites",
+      "style": {
+        "navigationBarTitleText": "我的收藏"
+      }
+    },
+    {
+      "path": "pages/profile/index",
+      "type": "page",
+      "name": "profile",
+      "layout": "tabbar",
+      "style": {
+        "navigationBarTitleText": "我的"
+      }
+    },
+    {
       "path": "pages/recipe-detail/index",
       "type": "page",
       "name": "recipe-detail",
       "style": {
         "navigationBarTitleText": "菜谱详情"
+      }
+    },
+    {
+      "path": "pages/register/index",
+      "type": "page",
+      "name": "register",
+      "style": {
+        "navigationBarTitleText": "注册"
       }
     },
     {
@@ -66,7 +107,7 @@
         "pagePath": "pages/index/index"
       },
       {
-        "pagePath": "pages/about/index"
+        "pagePath": "pages/profile/index"
       }
     ]
   },

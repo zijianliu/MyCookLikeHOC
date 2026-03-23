@@ -2,6 +2,8 @@
 import { type Recipe, getRandomRecipesByCategory, getRecipeDetail } from '../../api/modules/recipe'
 import { applyImagePreset } from '../../utils/image'
 import RecipeDetailSkeleton from './components/RecipeDetailSkeleton.vue'
+import { useUserStore } from '../../store/user'
+import { useFavoriteStore } from '../../store/favorite'
 
 definePage({
   name: 'recipe-detail',
@@ -12,17 +14,16 @@ definePage({
 
 const router = useRouter()
 const route = useRoute()
+const userStore = useUserStore()
+const favoriteStore = useFavoriteStore()
 
-// 获取菜谱ID
 const recipeId = computed(() => decodeURIComponent(route.params?.id as string || ''))
 
-// 菜谱详情数据
 const recipe = ref<Recipe | null>(null)
 const loading = ref(false)
 const recommendedRecipes = ref<Recipe[]>([])
-// 移除所有模拟数据，只保留真实数据
+const isFavorited = ref(false)
 
-// 获取菜谱详情
 async function fetchRecipeDetail() {
   if (!recipeId.value)
     return
@@ -34,8 +35,8 @@ async function fetchRecipeDetail() {
 
     if (data && data.length > 0) {
       recipe.value = data[0]
-      // 获取推荐菜谱
       fetchRecommendedRecipes()
+      await checkFavoriteStatus()
     }
     else {
       uni.showToast({
@@ -59,7 +60,6 @@ async function fetchRecipeDetail() {
   }
 }
 
-// 获取推荐菜谱
 async function fetchRecommendedRecipes() {
   try {
     const cat = recipe.value?.category || ''
@@ -73,7 +73,31 @@ async function fetchRecommendedRecipes() {
   }
 }
 
-// 移除收藏功能（模拟数据）
+async function checkFavoriteStatus() {
+  if (userStore.isLoggedIn && recipeId.value) {
+    isFavorited.value = await favoriteStore.checkFavoriteStatus(recipeId.value)
+  }
+}
+
+async function handleToggleFavorite() {
+  if (!userStore.isLoggedIn) {
+    uni.showModal({
+      title: '提示',
+      content: '登录后可收藏菜谱，是否前往登录？',
+      confirmText: '去登录',
+      cancelText: '取消',
+      success: (res) => {
+        if (res.confirm) {
+          router.push({ name: 'login' })
+        }
+      },
+    })
+    return
+  }
+
+  await favoriteStore.toggleFavorite(recipeId.value)
+  isFavorited.value = favoriteStore.isFavorite(recipeId.value)
+}
 
 // 查看推荐菜谱
 function viewRecommendedRecipe(id: string) {
@@ -165,9 +189,24 @@ onShareTimeline(() => {
       <!-- 菜谱基本信息 -->
       <view class="bg-white px-32rpx py-24rpx">
         <!-- 标题 -->
-        <text class="mb-16rpx block text-36rpx text-gray-900 font-bold leading-tight">
-          {{ recipe.title }}
-        </text>
+        <view class="flex items-start justify-between">
+          <text class="mb-16rpx flex-1 pr-32rpx text-36rpx text-gray-900 font-bold leading-tight">
+            {{ recipe.title }}
+          </text>
+          <view
+            class="flex flex-col items-center"
+            @click="handleToggleFavorite"
+          >
+            <wd-icon
+              :name="isFavorited ? 'star-fill' : 'star'"
+              size="22"
+              :color="isFavorited ? '#E17944' : '#999'"
+            />
+            <text class="mt-1 text-xs" :class="isFavorited ? 'text-orange-500' : 'text-gray-400'">
+              {{ isFavorited ? '已收藏' : '收藏' }}
+            </text>
+          </view>
+        </view>
 
         <!-- 分类标签 -->
         <view class="mb-16rpx flex items-center">
@@ -265,8 +304,8 @@ onShareTimeline(() => {
               <!-- 步骤图片 -->
               <!-- <view class="mt-16rpx h-200rpx w-full flex items-center justify-center rounded-12rpx bg-gray-100">
                 <view class="text-center">
-                  <wd-icon name="camera" size="40rpx" color="#9ca3af" />
-                  <text class="mt-8rpx block text-22rpx text-gray-400">
+                  <wd-icon name="camera" size="20" color="#9ca3af" />
+                  <text class="mt-2 text-22rpx text-gray-400">
                     步骤图片
                   </text>
                 </view>
