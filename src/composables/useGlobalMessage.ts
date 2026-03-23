@@ -4,6 +4,8 @@ import { defineStore } from 'pinia'
 export type GlobalMessageOptions = MessageOptions & {
   success?: (res: MessageResult) => void
   fail?: (res: MessageResult) => void
+  confirm?: () => void
+  cancel?: () => void
 }
 
 interface GlobalMessage {

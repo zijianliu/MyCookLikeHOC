@@ -14,10 +14,10 @@ const router = useRouter()
 // 推荐菜谱数据
 const recommendedRecipes = ref<Recipe[]>([])
 // 分类数据 - 后端返回 {category, icon_url} 对象数组
-const categories = ref<{ category: string, icon_url: string }[]>([])
+const categories = ref<{ category: string, icon_url?: string }[]>([])
 const categoryPages = computed(() => {
   const arr = categories.value || []
-  const pages: Array<{ category: string, icon_url: string }[]> = []
+  const pages: Array<{ category: string, icon_url?: string }[]> = []
   for (let i = 0; i < arr.length; i += 8) {
     pages.push(arr.slice(i, i + 8))
   }
@@ -65,7 +65,7 @@ function goToRecipeDetail(recipe: Recipe) {
 }
 
 // 跳转到分类页面
-function goToCategory(categoryItem: { category: string, icon_url: string }) {
+function goToCategory(categoryItem: { category: string, icon_url?: string }) {
   router.push({
     name: 'category',
     params: { category: categoryItem.category },
@@ -152,21 +152,21 @@ onShareTimeline(() => {
           <template #default="{ item }">
             <view class="grid grid-cols-4 w-full gap-24rpx">
               <view
-                v-for="categoryItem in item"
-                :key="categoryItem.category"
+                v-for="(catItem, idx) in item"
+                :key="idx"
                 class="flex flex-col items-center rounded-16rpx bg-gray-50 p-24rpx"
-                @click="goToCategory(categoryItem)"
+                @click="goToCategory(catItem as any)"
               >
                 <view class="mb-16rpx h-80rpx w-80rpx flex items-center justify-center overflow-hidden rounded-full bg-orange-100">
                   <image
-                    :src="applyImagePreset(categoryItem.icon_url, 'CATEGORY_ICON')"
+                    :src="applyImagePreset((catItem as any).icon_url || '', 'CATEGORY_ICON')"
                     class="h-full w-full object-cover"
                     mode="aspectFill"
                     :lazy-load="true"
                   />
                 </view>
                 <text class="text-center text-24rpx text-gray-700">
-                  {{ categoryItem.category }}
+                  {{ (catItem as any).category }}
                 </text>
               </view>
             </view>

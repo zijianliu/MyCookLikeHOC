@@ -8,7 +8,13 @@
  * 记得注释
 -->
 <script setup lang="ts">
-onLaunch(() => {})
+import { useUserStore } from './store/user'
+
+onLaunch(() => {
+  // 初始化用户登录状态
+  const userStore = useUserStore()
+  userStore.restoreFromStorage()
+})
 </script>
 
 <style lang="scss">

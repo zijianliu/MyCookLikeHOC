@@ -17,12 +17,12 @@ const tabbarItems = ref<TabbarItem[]>([
     activeIcon: '/static/tabbar/home-active.svg',
   },
   {
-    name: 'about',
+    name: 'profile',
     value: null,
     active: false,
-    title: '关于',
-    icon: '/static/tabbar/about.svg',
-    activeIcon: '/static/tabbar/about-active.svg',
+    title: '我的',
+    icon: '/static/tabbar/profile.svg',
+    activeIcon: '/static/tabbar/profile-active.svg',
   },
 ])
 

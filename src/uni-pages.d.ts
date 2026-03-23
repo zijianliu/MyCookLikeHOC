@@ -7,7 +7,12 @@ type _LocationUrl =
   "/pages/index/index" |
   "/pages/about/index" |
   "/pages/category/index" |
+  "/pages/favorites/index" |
+  "/pages/login/index" |
+  "/pages/profile/edit" |
+  "/pages/profile/index" |
   "/pages/recipe-detail/index" |
+  "/pages/register/index" |
   "/pages/search/index";
 
 interface NavigateToOptions {
