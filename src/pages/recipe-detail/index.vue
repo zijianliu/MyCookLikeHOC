@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { type Recipe, getRandomRecipesByCategory, getRecipeDetail } from '../../api/modules/recipe'
 import { applyImagePreset } from '../../utils/image'
+import { useFavorites } from '../../composables/useFavorites'
+import { useUserStore } from '../../store/user'
 import RecipeDetailSkeleton from './components/RecipeDetailSkeleton.vue'
 
 definePage({
@@ -12,6 +14,8 @@ definePage({
 
 const router = useRouter()
 const route = useRoute()
+const userStore = useUserStore()
+const { show: showToast } = useGlobalToast()
 
 // 获取菜谱ID
 const recipeId = computed(() => decodeURIComponent(route.params?.id as string || ''))
@@ -20,7 +24,16 @@ const recipeId = computed(() => decodeURIComponent(route.params?.id as string ||
 const recipe = ref<Recipe | null>(null)
 const loading = ref(false)
 const recommendedRecipes = ref<Recipe[]>([])
-// 移除所有模拟数据，只保留真实数据
+
+// 收藏功能
+const {
+  toggleFavorite,
+  checkIsFavorite,
+} = useFavorites()
+
+// 收藏状态
+const favoriteLoading = ref(false)
+const isFavorited = ref(false)
 
 // 获取菜谱详情
 async function fetchRecipeDetail() {
@@ -73,7 +86,46 @@ async function fetchRecommendedRecipes() {
   }
 }
 
-// 移除收藏功能（模拟数据）
+// 检查收藏状态
+async function checkFavoriteStatus() {
+  if (!recipeId.value || !userStore.isLoggedIn)
+    return
+  isFavorited.value = await checkIsFavorite(recipeId.value)
+}
+
+// 处理收藏/取消收藏
+async function handleFavorite() {
+  // 使用 userStore.isLoggedIn 确保响应式
+  if (!userStore.isLoggedIn) {
+    showToast({ msg: '请先登录' })
+    router.push('/pages/login/index')
+    return
+  }
+
+  if (favoriteLoading.value)
+    return
+
+  favoriteLoading.value = true
+  try {
+    const success = await toggleFavorite(recipeId.value)
+    if (success) {
+      isFavorited.value = !isFavorited.value
+      showToast({
+        msg: isFavorited.value ? '收藏成功' : '已取消收藏',
+      })
+    }
+    else {
+      showToast({ msg: '操作失败，请重试' })
+    }
+  }
+  catch (error) {
+    console.error('收藏操作失败:', error)
+    showToast({ msg: '操作失败，请重试' })
+  }
+  finally {
+    favoriteLoading.value = false
+  }
+}
 
 // 查看推荐菜谱
 function viewRecommendedRecipe(id: string) {
@@ -115,12 +167,19 @@ function formatSteps(steps: string) {
 // 页面加载时获取数据
 onMounted(() => {
   fetchRecipeDetail()
+  // 恢复登录状态
+  if (!userStore.isInitialized) {
+    userStore.restoreFromStorage()
+  }
+  // 检查收藏状态
+  checkFavoriteStatus()
 })
 
 // 监听ID变化
 watch(recipeId, () => {
   if (recipeId.value) {
     fetchRecipeDetail()
+    checkFavoriteStatus()
   }
 })
 
@@ -164,10 +223,25 @@ onShareTimeline(() => {
 
       <!-- 菜谱基本信息 -->
       <view class="bg-white px-32rpx py-24rpx">
-        <!-- 标题 -->
-        <text class="mb-16rpx block text-36rpx text-gray-900 font-bold leading-tight">
-          {{ recipe.title }}
-        </text>
+        <view class="flex items-start justify-between">
+          <!-- 标题 -->
+          <text class="mb-16rpx block flex-1 text-36rpx text-gray-900 font-bold leading-tight">
+            {{ recipe.title }}
+          </text>
+
+          <!-- 收藏按钮 -->
+          <view
+            class="ml-24rpx h-72rpx w-72rpx flex flex-shrink-0 items-center justify-center rounded-full"
+            :class="isFavorited ? 'bg-red-50' : 'bg-gray-100'"
+            @click="handleFavorite"
+          >
+            <wd-icon
+              :name="isFavorited ? 'star-filled' : 'star'"
+              size="40rpx"
+              :color="isFavorited ? '#ef4444' : '#999'"
+            />
+          </view>
+        </view>
 
         <!-- 分类标签 -->
         <view class="mb-16rpx flex items-center">
